@@ -1,0 +1,152 @@
+<html>
+
+<head>
+	<title>Fallout 3 Password Cracker</title>
+	<style type="text/css">
+		body {
+			text-align: center;
+			background-color: #494E49;
+			color: #ffffff;
+			font-family: Courier New;
+		}
+
+		.centersection {
+			margin-left: auto;
+			margin-right: auto;
+		}
+
+		.block {
+			width: 400px;
+			text-align: left;
+		}
+
+		span.sectionheader {
+			font-size: 24px;
+			font-weight: bold;
+			text-decoration: underline;
+		}
+
+		span#enterheader {
+			font-size: 24px;
+			font-weight: bold;
+		}
+
+		th {
+			text-align: left;
+			text-decoration: underline;
+			padding-bottom: 8px;
+		}
+
+		textarea, table td, input, #possibles {
+			font-size: 12px;
+		}
+
+		#words, #words table {
+			width: 250px;
+		}
+
+		div.processbuttons {
+			text-align: right; 
+			width: 100%;
+			padding-top: 5px;
+		}
+	</style>
+
+	<script type="text/javascript">
+		String.prototype.trim = function() { return this.replace(/^\s+|\s+$/g,""); }
+
+		var words = new Array();
+		var freqBoxes = null;
+
+		function setWords() {
+			createWordList();
+			writeWordList();
+		} //end function setwords
+
+		function createWordList() {
+			var wordBox = document.getElementById("enter_words");
+			wordBox.value = wordBox.value.trim();
+
+			words = new Array();
+			var enteredWords = new Array();
+			if(wordBox.value.length > 0) {
+				enteredWords = wordBox.value.split(",");
+				for(var i = 0; i < enteredWords.length; ++i) {
+					enteredWords[i] = enteredWords[i].toLowerCase().trim();
+					if(enteredWords[i].length > 0)
+						words.push(enteredWords[i]);
+				} //end for
+			} //end if
+		} //end function createWordList
+
+		function writeWordList() {
+			var html = "<table border='0' id='word_list'><tr><th>Word</th><th style='text-align: right;'>Freq.</th></tr>";
+
+			for(var i = 0; i < words.length; ++i) {
+				html += "<tr><td>" + words[i] + "</td>";
+				html += "<td style='text-align: right;'><input type='text value='' size='3' maxlength='2' /></td></tr>";
+			} //end for
+
+			html += "</table>";
+			html += '<div class="processbuttons"><input type="button" value="Process" onclick="process();" /></div>';
+			document.getElementById("words").innerHTML = html;
+		} //end function writeWordList
+
+		function process() {
+			var possiblesBox = document.getElementById("possibles");
+			possiblesBox.innerHTML = "";
+
+			freqBoxes = document.getElementById("word_list").getElementsByTagName("INPUT");
+			var possibles = getPossibles(words, 0);
+			possiblesBox.innerHTML = possibles.join("<br />");
+		} //end function process
+
+		function getPossibles(possibles, idx) {
+			if(idx == words.length) return possibles;  //recursive end condition
+
+			var freq = freqBoxes[idx].value.trim();
+
+			if(freq.search(/^\d+$/g) >= 0) { //make sure the entered frequency is a number
+				var newPossibles = new Array();
+				var currWord = words[idx];
+
+				for(var i = 0; i < possibles.length; ++i) {
+					count = 0;
+					for(var j = 0; j < currWord.length; ++j)
+						if(currWord.charAt(j) == possibles[i].charAt(j)) ++count;
+
+					if(count == freq)
+						newPossibles.push(possibles[i]); //we've found a match for the frequency
+				} //end for
+
+				return getPossibles(newPossibles, ++idx);
+			} //end if
+
+			return getPossibles(possibles, ++idx);
+		} //end function getPossibles
+	</script>
+</head>
+
+<body>	
+	<h1>Fallout 3 Password Cracker</h1>
+	<div class="centersection block">
+		<span id="enterheader">Enter Words</span> <span style="font-size: 14px;">(comma-separated):</span><br />
+		<textarea id="enter_words" class="block" style="height: 150px;"></textarea>
+		<div class="processbuttons">
+			<input type="button" value="Done" onclick="setWords();" />
+		</div>
+	</div>
+
+	<br /><br />
+	<div class="centersection block"><span class="sectionheader">Word List:</span></div>
+
+	<br />
+	<div class="centersection block" id="words"></div>
+
+	<br /><br />
+	<div class="centersection block"><span class="sectionheader">Possibilities:</span></div>
+
+	<br />
+	<div class="centersection block" id="possibles"></div>
+</body>
+</html>
